@@ -1,5 +1,18 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'pg'
 
-puts 'Hello World'
+db = PG.connect(dbname: 'expenses')
+result = db.exec 'SELECT * FROM expenses;'
+
+result.each do |tuple|
+  columns = [
+    tuple['id'],
+    tuple['created_on'],
+    tuple['amount'].rjust(7),
+    tuple['memo']
+  ]
+
+  puts columns.join(' | ')
+end
