@@ -3,13 +3,10 @@
 
 require 'pg'
 
-def connect_to_db
-  connection = PG.connect(dbname: 'expenses')
-  connection.exec 'SELECT * FROM expenses;'
-end
+CONNECTION = PG.connect(dbname: 'expenses')
 
 def list_expenses
-  result = connect_to_db
+  result = CONNECTION.exec('SELECT * FROM expenses ORDER BY created_on ASC')
 
   result.each do |tuple|
     columns = [tuple['id'],
@@ -36,8 +33,19 @@ def display_help
   HELP
 end
 
+def add_expense(amount, memo)
+  date = Date.today
+  sql = "INSERT INTO expenses (amount, memo, created_on) VALUES (#{amount}, '#{memo}', '#{date}')"
+  CONNECTION.exec(sql)
+end
+
 command = ARGV[0]
 case command
 when 'list' then list_expenses
+when 'add'
+  amount = ARGV[1]
+  memo = ARGV[2]
+  abort 'You must provide an amount and memo.' unless amount && memo
+  add_expense(amount, memo)
 else display_help
 end
